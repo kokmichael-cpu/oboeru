@@ -1,7 +1,7 @@
 /* Oboeru service worker — cache-first, want de app verandert nooit tijdens gebruik.
-   d62b21dfc5 wordt bij het bouwen vervangen door een hash van index.html; een nieuwe
+   af3273e0c7 wordt bij het bouwen vervangen door een hash van index.html; een nieuwe
    versie krijgt dus een nieuwe cache en de oude wordt opgeruimd.                      */
-const V = 'd62b21dfc5';
+const V = 'af3273e0c7';
 const CACHE = 'oboeru-' + V;
 const BESTANDEN = ['./', './index.html', './manifest.webmanifest',
                    './icon-192.png', './icon-512.png', './icon-maskable.png', './apple-touch-icon.png'];

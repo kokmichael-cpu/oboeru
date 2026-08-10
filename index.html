@@ -35,11 +35,16 @@ body{margin:0;background:#EFEBE4;color:var(--ink);overflow:hidden;
 .jp{font-family:var(--jp)}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 
-/* ---- frame ---- */
-#phone{position:fixed;inset:0;margin:auto;width:100%;max-width:420px;height:var(--vh,100%);max-height:100%;
+/* ---- frame ----
+   --vh en --vtop volgen het zichtbare venster. Als het toetsenbord openschuift krimpt
+   het frame mee en blijft hij tegen de bovenkant plakken; met margin:auto zou hij naar
+   het midden van het níet-gekrompen venster zakken en zou de knop eronder wegvallen. */
+#phone{position:fixed;left:0;right:0;top:var(--vtop,0px);margin:0 auto;
+  width:100%;max-width:420px;height:var(--vh,100%);
   background:var(--paper);display:flex;flex-direction:column;overflow:hidden}
 @media(min-width:520px) and (min-height:760px){
-  #phone{max-height:820px;border-radius:30px;border:1px solid #DCD5CA;
+  #phone{top:50%;transform:translateY(-50%);height:min(var(--vh,100%),820px);
+    border-radius:30px;border:1px solid #DCD5CA;
     box-shadow:0 20px 50px -18px rgba(60,50,40,.3)}
 }
 #nav{flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:max(12px,env(safe-area-inset-top)) 18px 8px;min-height:46px}
@@ -1337,7 +1342,11 @@ V.wrecall = { vol:true, render(m, nav, c){
   };
   knop.onclick=check;
   inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); if(!inp.disabled) check(); }});
-  setTimeout(()=>inp.focus(),60);
+  // Meteen scherpstellen, nog binnen de tik die deze kaart opende. iOS opent het
+  // toetsenbord alleen als focus() in diezelfde afhandeling valt — met een setTimeout
+  // eromheen telt het niet meer als jouw handeling en moet je zelf het vakje aantikken.
+  inp.focus({preventScroll:true});
+  setTimeout(()=>{ if(document.activeElement!==inp) inp.focus({preventScroll:true}); }, 60);
 }};
 
 /* ---- leerkaart: de eerste ontmoeting met een woord of kanji ----
@@ -2200,7 +2209,13 @@ V.set = { render(m, nav){
 // verdwijnen. Daarom volgt de hoogte van het frame het zichtbare deel.
 function volgToetsenbord(){
   const vv = window.visualViewport; if(!vv) return;
-  const pas = ()=>document.documentElement.style.setProperty('--vh', vv.height + 'px');
+  const r = document.documentElement.style;
+  const pas = ()=>{
+    r.setProperty('--vh', vv.height + 'px');
+    // iOS schuift het zichtbare venster omhoog om het invoerveld vrij te houden; zonder
+    // deze verschuiving hangt het frame er scheef onder.
+    r.setProperty('--vtop', Math.max(0, vv.offsetTop||0) + 'px');
+  };
   vv.addEventListener('resize', pas); vv.addEventListener('scroll', pas); pas();
 }
 function start(){
